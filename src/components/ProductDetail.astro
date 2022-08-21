@@ -1,0 +1,80 @@
+---
+
+import type { ProductResponse, Thumbnail } from './../types/shopware'
+
+interface Props {
+    productId: string
+}
+
+const { productId } = Astro.props as Props;
+
+const productDetailEndpoint: RequestInfo = import.meta.env.SHOPWARE_ENDPOINT + '/store-api/product/' + productId;
+const productDetailBody: RequestInit = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'sw-access-key': import.meta.env.SHOPWARE_ACCESS_KEY,
+        'sw-include-seo-urls': '1'
+    },
+    body: JSON.stringify({
+        associations: {
+            media: {}
+        },
+        includes: {
+            product: ['name', 'id', 'translated', 'seoUrls', 'cover', 'description', 'calculatedPrice', 'media'],
+            seo_url: ['seoPathInfo'],
+            product_media: ['media'],
+            media: ['thumbnails'],
+            media_thumbnail: ['width', 'height', 'url'],
+        }
+    })
+}
+
+const { product, configurator } : ProductResponse = await fetch(productDetailEndpoint, productDetailBody).then(res => res.json());
+
+function generateSrcSet(thumbnails: Thumbnail[]) {
+    return thumbnails.map(thumbnail => `${thumbnail.url} ${thumbnail.width}w`).join(', ');
+}
+
+---
+
+<div class="max-w-screen-lg mx-auto mt-24 font-light">
+    <div class="flex gap-12">
+        <div class="flex-none w-96">
+            <img alt={product.translated.name} class="w-96 h-96 aspect-square object-cover hover:scale-105 transition-transform" srcset={generateSrcSet(product.cover.media.thumbnails)} />
+            <div class="grid grid-cols-2 gap-6 mt-6">
+
+                { product.media.map(galleryItem => (
+                    <img alt={product.translated.name} class="w-full h-full aspect-square object-cover" srcset={generateSrcSet(galleryItem.media.thumbnails)} />
+                ))}
+                
+            </div>
+        </div>
+    
+        <div class="flex flex-col divide-y divide-gray-300">
+            <h2 class=" text-4xl font-serif pb-6">{ product.translated.name }</h2>
+            <div class="py-6">
+                <div class="font-bold text-xl">£{ product.calculatedPrice.totalPrice.toFixed(2) }</div>
+                { product.calculatedPrice.referencePrice &&
+                    <div class="text-xs">
+                        Content: { product.calculatedPrice.referencePrice.purchaseUnit }
+                        { product.calculatedPrice.referencePrice.unitName }
+                        (£{product.calculatedPrice.referencePrice.price.toFixed(2)} / {product.calculatedPrice.referencePrice.referenceUnit} {product.calculatedPrice.referencePrice.unitName})
+                    </div>
+                }
+                { configurator.length > 0 && <div class="mt-4">
+                    { configurator.map(group => (
+                        <div class="font-medium">{group.translated.name}</div>
+                        <div class="flex gap-3 pt-2">
+                            {group.options.map(option => (
+                                <div class="text-sm px-2 py-1 bg-slate-200 rounded-md">{option.translated.name}</div>
+                            ))}
+                        </div>
+                    )) }
+                </div> }
+            </div>
+            <div class="pt-6 leading-7" set:html={ product.description } />
+        </div>
+    </div>
+</div>

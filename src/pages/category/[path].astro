@@ -1,0 +1,43 @@
+---
+
+import type { NavigationElement } from '../../types/shopware';
+
+import ProductListing from '../../components/ProductListing.astro';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+
+	const navigationEndpoint: RequestInfo = import.meta.env.SHOPWARE_ENDPOINT + '/store-api/navigation/main-navigation/main-navigation';
+	const navigationBody: RequestInit = {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Accept': 'application/json',
+			'sw-access-key': import.meta.env.SHOPWARE_ACCESS_KEY,
+		},
+		body: JSON.stringify({
+			depth: 2,
+			includes: {
+				category: ['id']
+			}
+		})
+	}
+
+	const navigationElements: NavigationElement[] = await fetch(navigationEndpoint, navigationBody).then(res => res.json());
+
+	return navigationElements.map(navigationElement => ({
+		params: {
+			path: navigationElement.id
+		}
+	}));
+}
+
+const { path } = Astro.params;
+
+const categoryId = path?.toString() ?? '';
+
+---
+
+<Layout title="Category">
+	<ProductListing categoryId={categoryId} />
+</Layout>

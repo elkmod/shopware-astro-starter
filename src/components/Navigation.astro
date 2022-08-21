@@ -1,0 +1,40 @@
+---
+
+import type { NavigationElement } from "./../types/shopware";
+
+const navigationEndpoint: RequestInfo = import.meta.env.SHOPWARE_ENDPOINT + '/store-api/navigation/main-navigation/main-navigation';
+const navigationBody: RequestInit = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'sw-access-key': import.meta.env.SHOPWARE_ACCESS_KEY,
+        'sw-include-seo-urls': '1'
+    },
+    body: JSON.stringify({
+        depth: 2,
+        includes: {
+            category: ['name', 'id', 'translated', 'seoUrls'],
+            seo_url: ['seoPathInfo']
+        }
+    })
+}
+
+let navigationElements: NavigationElement[] = await fetch(navigationEndpoint, navigationBody).then(res => res.json());
+
+---
+
+<div class="flex w-full h-8 my-5 divide-x divide-gray-200 justify-center font-light">
+    <div class="flex items-center px-6">
+        <a href="/">
+            Home
+        </a>
+    </div>
+    {navigationElements.map(element => (
+        <div class="flex items-center px-6">
+            <a href={'/category/' + element.id}>
+                {element.name}
+            </a>
+        </div>
+    ))}
+</div>

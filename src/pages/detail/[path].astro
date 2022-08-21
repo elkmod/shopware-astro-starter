@@ -1,0 +1,73 @@
+---
+
+import type { NavigationElement, ProductListing } from '../../types/shopware';
+
+import ProductDetail from '../../components/ProductDetail.astro';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+
+    const staticPaths : {
+        params: {
+            path: string;
+        };
+    }[] = [];
+
+    const navigationEndpoint: RequestInfo = import.meta.env.SHOPWARE_ENDPOINT + '/store-api/navigation/main-navigation/main-navigation';
+    const navigationBody: RequestInit = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'sw-access-key': import.meta.env.SHOPWARE_ACCESS_KEY,
+        },
+        body: JSON.stringify({
+            depth: 2,
+            includes: {
+                category: ['id']
+            }
+        })
+    }
+
+    const navigationElements: NavigationElement[] = await fetch(navigationEndpoint, navigationBody).then(res => res.json());
+
+    const productListingBody: RequestInit = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'sw-access-key': import.meta.env.SHOPWARE_ACCESS_KEY,
+            'sw-include-seo-urls': '1'
+        },
+        body: JSON.stringify({
+            includes: {
+                product_listing: ['elements'],
+                product: ['id'],
+            }
+        })
+    }
+
+    for(let i = 0; i < navigationElements.length; i++) {
+        const productListingEndpoint = import.meta.env.SHOPWARE_ENDPOINT + '/store-api/product-listing/' + navigationElements[i].id;
+        const productListing: ProductListing = await fetch(productListingEndpoint, productListingBody).then(res => res.json());
+
+        for(let j = 0; j < productListing.elements.length; j++) {
+            staticPaths.push({
+                params: {
+                    path: productListing.elements[j].id
+                }
+            });
+        }
+    }
+
+	return staticPaths;
+}
+
+const { path } = Astro.params;
+
+const productId = path?.toString() ?? '';
+---
+
+<Layout title="Product">
+	<ProductDetail productId={productId} />
+</Layout>

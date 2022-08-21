@@ -1,0 +1,70 @@
+---
+
+import type { ProductListing, Thumbnail } from './../types/shopware'
+
+interface Props {
+    categoryId: string
+}
+
+const { categoryId } = Astro.props as Props;
+
+const productListingEndpoint: RequestInfo = import.meta.env.SHOPWARE_ENDPOINT + '/store-api/product-listing/' + categoryId;
+const productListingBody: RequestInit = {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'sw-access-key': import.meta.env.SHOPWARE_ACCESS_KEY,
+        'sw-include-seo-urls': '1'
+    },
+    body: JSON.stringify({
+        includes: {
+            product_listing: ['elements', 'total'],
+            product: ['name', 'id', 'translated', 'seoUrls', 'calculatedPrice', 'cover'],
+            seo_url: ['seoPathInfo'],
+            product_media: ['media'],
+            media: ['thumbnails'],
+            media_thumbnail: ['width', 'height', 'url']
+        }
+    })
+}
+
+const productListing: ProductListing = await fetch(productListingEndpoint, productListingBody).then(res => res.json());
+
+function generateSrcSet(thumbnails: Thumbnail[]) {
+    return thumbnails.map(thumbnail => `${thumbnail.url} ${thumbnail.width}w`).join(', ');
+}
+
+---
+
+<div class="max-w-screen-xl mx-auto font-light">
+    <div class="my-12 py-6 flex justify-center border-y text-gray-700">
+        {productListing.total} products in this category
+    </div>
+    <div class="mb-12 grid grid-cols-4 gap-12">
+        {productListing.elements.map(product => (
+            <div>
+                <div class="w-full aspect-square overflow-hidden">
+                    <a href={'/detail/' + product.id}>
+                        <img alt={product.translated.name} class="w-full h-full object-cover hover:scale-105 transition-transform" srcset={generateSrcSet(product.cover.media.thumbnails)} />
+                    </a>
+                </div>
+                <div class="grid grid-cols-3 upperecase mt-3">
+                    <div class="col-span-2 text-gray-800 font-light overflow-clip whitespace-nowrap text-ellipsis">
+                        {product.translated.name}    
+                    </div>
+                    <div class="text-right text-gray-400 font-light overflow-clip whitespace-nowrap text-ellipsis">
+                        £{product.calculatedPrice.totalPrice}    
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+    { productListing.total < 1 &&
+        <div class="max-w-screen-xl mx-auto text-6xl leading-relaxed font-thin mt-64 text-center bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text">
+            <span class="text-transparent">
+                Better luck <a href="/" class="font-bold">next time</a>
+            </span>
+        </div>
+    }
+</div>
