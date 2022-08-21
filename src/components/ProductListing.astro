@@ -41,7 +41,7 @@ function generateSrcSet(thumbnails: Thumbnail[]) {
     <div class="my-12 py-6 flex justify-center border-y text-gray-700">
         {productListing.total} products in this category
     </div>
-    <div class="mb-12 grid grid-cols-4 gap-12">
+    <div class="mb-12 grid grid-cols-2 md:grid-cols-4 gap-12">
         {productListing.elements.map(product => (
             <div>
                 <div class="w-full aspect-square overflow-hidden">
@@ -61,7 +61,7 @@ function generateSrcSet(thumbnails: Thumbnail[]) {
         ))}
     </div>
     { productListing.total < 1 &&
-        <div class="max-w-screen-xl mx-auto text-6xl leading-relaxed font-thin mt-64 text-center bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text">
+        <div class="max-w-screen-xl mx-auto text-6xl leading-relaxed font-thin mt-32 md:mt-64 text-center bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text">
             <span class="text-transparent">
                 Better luck <a href="/" class="font-bold">next time</a>
             </span>

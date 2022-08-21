@@ -24,14 +24,14 @@ let navigationElements: NavigationElement[] = await fetch(navigationEndpoint, na
 
 ---
 
-<div class="flex w-full h-8 my-5 divide-x divide-gray-200 justify-center font-light">
-    <div class="flex items-center px-6">
+<div class="flex flex-col md:flex-row w-full md:h-8 my-5 divide-y md:divide-y-0 md:divide-x divide-gray-200 justify-center font-light">
+    <div class="flex items-center px-6 py-2">
         <a href="/">
             Home
         </a>
     </div>
     {navigationElements.map(element => (
-        <div class="flex items-center px-6">
+        <div class="flex items-center px-6 py-2">
             <a href={'/category/' + element.id}>
                 {element.name}
             </a>

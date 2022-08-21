@@ -22,6 +22,8 @@ const { title } = Astro.props as Props;
 	</head>
 	<body>
 		<Navigation />
-		<slot />
+		<div class="px-3">
+			<slot />
+		</div>
 	</body>
 </html>

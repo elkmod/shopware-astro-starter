@@ -40,10 +40,10 @@ function generateSrcSet(thumbnails: Thumbnail[]) {
 ---
 
 <div class="max-w-screen-lg mx-auto mt-24 font-light">
-    <div class="flex gap-12">
-        <div class="flex-none w-96">
-            <img alt={product.translated.name} class="w-96 h-96 aspect-square object-cover hover:scale-105 transition-transform" srcset={generateSrcSet(product.cover.media.thumbnails)} />
-            <div class="grid grid-cols-2 gap-6 mt-6">
+    <div class="md:flex gap-12">
+        <div class="flex-none md:w-96">
+            <img alt={product.translated.name} class="w-full aspect-square object-cover hover:scale-105 transition-transform" srcset={generateSrcSet(product.cover.media.thumbnails)} />
+            <div class="hidden md:grid grid-cols-2 gap-6 mt-6">
 
                 { product.media.map(galleryItem => (
                     <img alt={product.translated.name} class="w-full h-full aspect-square object-cover" srcset={generateSrcSet(galleryItem.media.thumbnails)} />
@@ -52,7 +52,7 @@ function generateSrcSet(thumbnails: Thumbnail[]) {
             </div>
         </div>
     
-        <div class="flex flex-col divide-y divide-gray-300">
+        <div class="mt-6 md:mt-0 flex flex-col divide-y divide-gray-300">
             <h2 class=" text-4xl font-serif pb-6">{ product.translated.name }</h2>
             <div class="py-6">
                 <div class="font-bold text-xl">£{ product.calculatedPrice.totalPrice.toFixed(2) }</div>
